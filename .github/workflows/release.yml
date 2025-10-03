@@ -44,13 +44,16 @@ jobs:
 
       - name: Run composer install if composer.json exists
         if: steps.check_composer.outputs.files_exists == 'true'
-        run: composer validate --no-check-publish && composer install --prefer-dist --no-progress --no-suggest
+        run: composer validate --no-check-publish && composer install --prefer-dist --no-progress
+
+      - name: "Tar files"
+        run: tar -cvf php-app.tar .
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: php-app
-          path: .
+          path: php-app.tar
 
   deploy:
     runs-on: ubuntu-latest
