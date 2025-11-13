@@ -1,10 +1,13 @@
 <?php
 
+require __DIR__ . '/../vendor/autoload.php';
+
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
-require __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
 
 $app = AppFactory::create();
 
@@ -13,7 +16,10 @@ $app->get('/', function (Request $request, Response $response) {
     $context = stream_context_create([
         'http' => [
             'method' => 'POST',
-            'header' => ['Content-type: application/json', 'X-API-Key: 123abc'],
+            'header' => [
+                'content-type: application/json',
+                'x-api-key:' . $_ENV['API_KEY']
+            ],
             'content' => json_encode([
                 'orgNo' => '1111222233',
                 'email' => 'dude@example.com'
@@ -21,8 +27,8 @@ $app->get('/', function (Request $request, Response $response) {
         ]
     ]);
 
-    $newResponse = $response->withBody(new \Slim\Psr7\Stream(fopen('http://localhost:8000/api/export', 'rb', false, $context)));
-    return $newResponse->withHeader('Content-Type', 'application/json');
+    $newResponse = $response->withBody(new \Slim\Psr7\Stream(fopen($_ENV['API_URL'], 'rb', false, $context)));
+    return $newResponse->withHeader('Content-Type', 'application/octet-stream');
 });
 
 $app->run();
